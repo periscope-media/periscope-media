@@ -1,0 +1,1 @@
+curl -i -X POST localhost:5000/api/v2/news -H "Authorization: 1536680120350" -d '{"title": "Good To Go","description": "It has been a not so long up hill battle. But it is ok.","published": 1536680120350,"found": 1536680120350,"author": "braun braun","url": "localhost:5000/api/v2/news","image": "https://cats.com/cats.png"}'
