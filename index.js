@@ -6,8 +6,13 @@ const PORT = process.env.PORT || 5000
 
 var newsDump = [
   {
-    title: 'is the endpoint secure?',
-    description: 'a very good question today on this miserable day.'
+    "title": "Good To Go",
+    "description": "It has been a not so long up hill battle. But it is ok.",
+    "published": 1536680120350,
+    "found": 1536680120350,
+    "author": "braun braun",
+    "url": "localhost:5000/api/v2/news",
+    "image": "https://picsum.photos/100/100"
   }
 ]
 
