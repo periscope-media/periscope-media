@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const path = require('path')
 const qs = require('qs')
 const PORT = process.env.PORT || 5000
@@ -138,6 +139,7 @@ function endpointPostNews (req, res) {
 }
 
 express()
+  .use(cors())
   .use(express.static(path.join(__dirname, 'public')))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
@@ -147,5 +149,4 @@ express()
   .get('/api/v2/news', endpointGetNews)
   .post('/api/v2/news', middlewareAuthenticated, middlewareAuthorize, endpointPostNews)
   .get('/api/v2/news/dump', endpointGetNewsDump)
-  .use(function (req, res, next) { return res.header('Access-Control-Allow-Origin', '*') })
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
