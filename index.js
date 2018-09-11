@@ -74,22 +74,26 @@ function endpointAuthenticate (req, res) {
     console.log('got: ', body, data)
     body += data
   }).on('end', function () {
-    console.log('finalized body: ', body)
-    console.log('attempting to query and parse body')
-    var post = qs.parse(body)
-    console.log('got post data: ', post)
-    console.log('attempting to verify credentials')
-    if (post.username === 'braun' && post.password === 'braun') {
-      console.log('credentials verified')
-      var token = getToken()
-      console.log('sending token: ', token)
-      res.writeHead(200, {
-        'Authorization': token
-      })
-      console.log('sent token')
-    } else {
-      console.log('invalid credentials')
-      res.sendStatus(401)
+    console.log('finalized body: ', body.toString())
+    try {
+      var authenticationResource = JSON.parse(body.toString())
+      console.log('got authenticationResource info: ', authenticationResource)
+      console.log('attempting to verify data')
+      if (authenticationResource.username === 'braun' && authenticationResource.password === 'braun') {
+        console.log('credentials verified')
+        var token = getToken()
+        console.log('sending token: ', token)
+        res.writeHead(200, {
+          'Authorization': token
+        })
+        console.log('sent token')
+      } else {
+        console.log('invalid credentials')
+        res.sendStatus(401)
+      }
+    } catch (e) {
+      console.log('bad post data')
+      res.sendStatus(422)
     }
     res.end()
   })
