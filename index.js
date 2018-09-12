@@ -84,6 +84,7 @@ function endpointAuthenticate (req, res) {
         var token = getToken()
         console.log('sending token: ', token)
         res.writeHead(200, {
+          'Access-Control-Expose-Headers': 'Authorization',
           'Authorization': token
         })
         console.log('sent token')
