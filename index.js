@@ -12,7 +12,7 @@ var newsDump = [
     "found": 1536680120350,
     "author": "braun braun",
     "url": "localhost:5000/api/v2/news",
-    "image": "https://picsum.photos/100/100"
+    "image": "https://picsum.photos/100/104"
   }
 ]
 
@@ -23,9 +23,9 @@ function getNewsDump () {
 }
 
 function getNews () {
-  return getNewsDump().filter(function (news, i) {
-    return i < 5
-  })
+  const dump = getNewsDump()
+  dump.reverse()
+  return dump
 }
 
 function getToken () {
