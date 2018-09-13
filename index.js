@@ -1,9 +1,18 @@
 const express = require('express')
+const pg = require('pg')
 const cors = require('cors')
 const path = require('path')
 const qs = require('qs')
 const PORT = process.env.PORT || 5000
 
+
+
+// -- globals ---------------------------------------------- <
+console.log('using:', process.env.DATABASE_URL)
+const postgres = new pg.Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: true
+})
 var newsDump = [
   {
     "title": "Good To Go",
@@ -16,6 +25,8 @@ var newsDump = [
   }
 ]
 
+
+// -- functions -------------------------------------------- <
 function getNewsDump () {
   return newsDump.filter(function (news, i) {
     return i < 5
@@ -65,6 +76,65 @@ function middlewareAuthorize (req, res, next) {
     res.sendStatus(401)
     res.redrect('/api/v2/authenticate')
   }
+}
+
+function endpointRegister (req, res) {
+  var body = ''
+  req.on('data', function (data) {
+    console.log('/register got:', body, data)
+    body += data
+  }).on('end', function () {
+    console.log('finalized body:', body.toString())
+    try {
+      var registrationInformation = JSON.parse(body.toString())
+      console.log('got registration info:', registrationInformation)
+      console.log('attempting to verify data')
+      if (registrationInformation.username && registrationInformation.password) {
+        postgres.query(
+          'insert into users (uname, upassword, ubirthday) values ($1, $2)',
+          [
+            registrationInformation.username,
+            registrationInformation.password
+          ],
+          function (err, res) {
+            if (err) {
+              console.log(err)
+            } else {
+              res.format({
+                'application/json': function () {
+                  return res.send(res.rows)
+                }
+              })
+            }
+          }
+        )
+      } else {
+        console.log('invalid post data')
+        res.sendStatus(415)
+      }
+    } catch (e) {
+      console.log('bad post data')
+      res.sendStatus(422)
+    }
+    res.end()
+  })
+}
+
+function endpointUsers (req, res) {
+  postgres.query(
+    'select uname, ubirthday from users',
+    function (err, res) {
+      if (err) {
+        console.log(err)
+      } else {
+        res.format({
+          'application/json': function () {
+            return res.send(res.rows)
+          }
+        })
+      }
+    }
+  )
 }
 
 function endpointAuthenticate (req, res) {
@@ -148,14 +218,23 @@ function endpointPostNews (req, res) {
   })
 }
 
+
+// -- program ---------------------------------------------- <
+
+postgres.connect()
+
+console.log('postgress data connected..')
+
 express()
   .use(cors())
   .use(express.static(path.join(__dirname, 'public')))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
   .get('/', (req, res) => res.render('pages/index'))
-  .post('/api/v2/authenticate', endpointAuthenticate)
   .get('/api/v2/ping', endpointPing)
+  .get('/api/v2/users', endpointUsers)
+  .post('/api/v2/register', endpointRegister)
+  .post('/api/v2/authenticate', endpointAuthenticate)
   .get('/api/v2/news', endpointGetNews)
   .post('/api/v2/news', middlewareAuthenticated, middlewareAuthorize, endpointPostNews)
   .get('/api/v2/news/dump', endpointGetNewsDump)
