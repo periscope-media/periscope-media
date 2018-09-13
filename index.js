@@ -123,13 +123,13 @@ function endpointRegister (req, res) {
 function endpointUsers (req, res) {
   postgres.query(
     'select uname, ubirthday from users',
-    function (err, res) {
+    function (err, result) {
       if (err) {
         console.log(err)
       } else {
         res.format({
           'application/json': function () {
-            return res.send(res.rows)
+            return res.send(result.rows)
           }
         })
       }
