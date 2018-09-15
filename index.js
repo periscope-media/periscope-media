@@ -193,10 +193,16 @@ function endpointGetNews (req, res) {
         res.end()
       } else {
         var news = results.rows
+        var newss = news.map(function (n) {
+          return Object.assign(n, {
+            npublished: new Date(n.npublished).getTime(),
+            nfound: new Date(n.nfound).getTime()
+          })
+        })
         console.log('deliverying news')
         res.format({
           'application/json': function () {
-            return res.send(news)
+            return res.send(newss)
           }
         })
         res.end()
@@ -215,9 +221,15 @@ function endpointGetNewsDump (req, res) {
     } else {
       console.log('deliverying news')
       var news = results.rows
+      var newsDump = news.map(function (n) {
+        return Object.assign(n, {
+          npublished: new Date(n.npublished).getTime(),
+          nfound: new Date(n.nfound).getTime()
+        })
+      })
       res.format({
         'application/json': function () {
-          return res.send(news)
+          return res.send(newsDump)
         }
       })
       res.end()
@@ -240,6 +252,9 @@ function endpointPostNews (req, res) {
       if (news.ntitle && news.ndescription && news.npublished && news.nfound && news.nurl && news.nauthor && news.nimage) {
         console.log('news verified')
         console.log('adding news to dump: ', news)
+        if (news.npublished.isNumber()) {
+
+        }
         postgres.query(
           'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage)'+
           'values ($1, $2, to_timestamp($3), to_timestamp($4), $5, $6, $7)',
