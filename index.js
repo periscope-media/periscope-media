@@ -174,7 +174,7 @@ function endpointGetNews (req, res) {
   postgres.query('select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ == b.uid_', function (err, result) {
     if (err) {
       console.log('error deliverying news')
-      res.sendStatus(500)
+      res.status(500)
       res.format({
         'application/json': function () {
           return res.send([err])
@@ -194,9 +194,12 @@ function endpointGetNews (req, res) {
 }
 
 function endpointGetNewsDump (req, res) {
+  console.log('attempting to query news')
   postgres.query('select * from news', function(err, result) {
+    console.log('queried news!')
     if (err) {
-      res.sendStatus(500)
+      console.log(err)
+      res.status(500)
       return res.format({
         'application/json': function () {
           return res.send(err)
@@ -245,7 +248,7 @@ function endpointPostNews (req, res) {
           ],
           function (err, result) {
             if (err) {
-              res.sendStatus(500)
+              res.status(500)
               res.format({
                 'application/json': function () {
                   return res.send([err])
