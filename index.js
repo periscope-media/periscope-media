@@ -98,7 +98,8 @@ function endpointRegister (req, res) {
           ],
           function (err, res) {
             if (err) {
-              console.log(err)
+              console.log('error inserting into users:', err)
+              res.status(500)
             } else {
               res.format({
                 'application/json': function () {
@@ -106,6 +107,7 @@ function endpointRegister (req, res) {
                 }
               })
             }
+            res.end()
           }
         )
       } else {
@@ -125,7 +127,8 @@ function endpointUsers (req, res) {
     'select uname, ubirthday from users',
     function (err, result) {
       if (err) {
-        console.log(err)
+        console.log('error selecting from user:', err)
+        res.status(500)
       } else {
         res.format({
           'application/json': function () {
@@ -133,6 +136,7 @@ function endpointUsers (req, res) {
           }
         })
       }
+      res.end()
     }
   )
 }
@@ -173,13 +177,8 @@ function endpointAuthenticate (req, res) {
 function endpointGetNews (req, res) {
   postgres.query('select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ = b.uid_', function (err, result) {
     if (err) {
-      console.log('error deliverying news')
+      console.log('error deliverying news:', err)
       res.status(500)
-      res.format({
-        'application/json': function () {
-          return res.send([err])
-        }
-      })
     } else {
       var news = results.rows
       console.log('deliverying news')
@@ -196,24 +195,19 @@ function endpointGetNews (req, res) {
 function endpointGetNewsDump (req, res) {
   console.log('attempting to query news')
   postgres.query('select * from news', function(err, result) {
-    console.log('queried news!')
     if (err) {
-      console.log(err)
+      console.log('error selecting from news:', err)
       res.status(500)
-      return res.format({
-        'application/json': function () {
-          return res.send(err)
-        }
-      })
     } else {
       console.log('deliverying news')
       var news = results.rows
-      return res.format({
+      res.format({
         'application/json': function () {
           return res.send(news)
         }
       })
     }
+    res.end()
   })
 }
 
@@ -232,8 +226,6 @@ function endpointPostNews (req, res) {
       if (news.title && news.description && news.published && news.found && news.url && news.author && news.image) {
         console.log('news verified')
         console.log('adding news to dump: ', news)
-        newsDump.push(news)
-        // HERE
         postgres.query(
           'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage, uid_) '+
           'values ($1, $2. $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
@@ -248,12 +240,8 @@ function endpointPostNews (req, res) {
           ],
           function (err, result) {
             if (err) {
+              console.log('error inserting news:', err)
               res.status(500)
-              res.format({
-                'application/json': function () {
-                  return res.send([err])
-                }
-              })
             } else {
               res.format({
                 'application/json': function () {
@@ -262,6 +250,7 @@ function endpointPostNews (req, res) {
               })
               console.log('news recorded')
             }
+            res.end()
         })
       } else {
         console.log('invalid news')
