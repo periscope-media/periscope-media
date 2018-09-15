@@ -207,7 +207,7 @@ function endpointGetNews (req, res) {
 
 function endpointGetNewsDump (req, res) {
   console.log('attempting to query news')
-  postgres.query('select * from news order by nid', function(err, results) {
+  postgres.query('select * from news order by nid desc', function(err, results) {
     if (err) {
       console.log('error selecting from news:', err)
       res.sendStatus(500)
