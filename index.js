@@ -176,7 +176,8 @@ function endpointAuthenticate (req, res) {
 
 function endpointGetNews (req, res) {
   postgres.query(
-    'select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ = b.uid_',
+    // 'select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ = b.uid_',
+    'select * from news',
     function (err, results) {
       if (err) {
         console.log('error deliverying news:', err)
@@ -230,8 +231,8 @@ function endpointPostNews (req, res) {
         console.log('news verified')
         console.log('adding news to dump: ', news)
         postgres.query(
-          'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage, uid_) '+
-          'values ($1, $2. $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+          'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage)'+
+          'values ($1, $2. $3, $4, $5, $6, $7)',
           [
             news.title,
             news.description,
