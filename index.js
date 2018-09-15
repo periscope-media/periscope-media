@@ -231,13 +231,13 @@ function endpointPostNews (req, res) {
         console.log('news verified')
         console.log('adding news to dump: ', news)
         postgres.query(
-          'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage)'+
+          'insert into news (ntitle, ndescription, to_timestamp(npublished), to_timestamp(nfound), nurl, nauthor, nimage)'+
           'values ($1, $2, $3, $4, $5, $6, $7)',
           [
             news.title,
             news.description,
-            news.published,
-            news.found,
+            news.published/1000,
+            news.found/1000,
             news.url,
             news.author,
             news.image
