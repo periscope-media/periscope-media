@@ -99,7 +99,7 @@ function endpointRegister (req, res) {
           function (err, res) {
             if (err) {
               console.log('error inserting into users:', err)
-              res.status(500)
+              res.sendStatus(500)
             } else {
               res.format({
                 'application/json': function () {
@@ -128,7 +128,7 @@ function endpointUsers (req, res) {
     function (err, results) {
       if (err) {
         console.log('error selecting from user:', err)
-        res.status(500)
+        res.sendStatus(500)
       } else {
         res.format({
           'application/json': function () {
@@ -181,7 +181,7 @@ function endpointGetNews (req, res) {
     function (err, results) {
       if (err) {
         console.log('error deliverying news:', err)
-        res.status(500)
+        res.sendStatus(500)
       } else {
         var news = results.rows
         console.log('deliverying news')
@@ -201,7 +201,7 @@ function endpointGetNewsDump (req, res) {
   postgres.query('select * from news', function(err, results) {
     if (err) {
       console.log('error selecting from news:', err)
-      res.status(500)
+      res.sendStatus(500)
     } else {
       console.log('deliverying news')
       var news = results.rows
@@ -232,7 +232,7 @@ function endpointPostNews (req, res) {
         console.log('adding news to dump: ', news)
         postgres.query(
           'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage)'+
-          'values ($1, $2. $3, $4, $5, $6, $7)',
+          'values ($1, $2, $3, $4, $5, $6, $7)',
           [
             news.title,
             news.description,
@@ -245,7 +245,7 @@ function endpointPostNews (req, res) {
           function (err, results) {
             if (err) {
               console.log('error inserting news:', err)
-              res.status(500)
+              res.sendStatus(500)
             } else {
               res.format({
                 'application/json': function () {
