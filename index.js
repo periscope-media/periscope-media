@@ -125,14 +125,14 @@ function endpointRegister (req, res) {
 function endpointUsers (req, res) {
   postgres.query(
     'select uname, ubirthday from users',
-    function (err, result) {
+    function (err, results) {
       if (err) {
         console.log('error selecting from user:', err)
         res.status(500)
       } else {
         res.format({
           'application/json': function () {
-            return res.send(result.rows)
+            return res.send(results.rows)
           }
         })
       }
@@ -175,26 +175,29 @@ function endpointAuthenticate (req, res) {
 }
 
 function endpointGetNews (req, res) {
-  postgres.query('select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ = b.uid_', function (err, result) {
-    if (err) {
-      console.log('error deliverying news:', err)
-      res.status(500)
-    } else {
-      var news = results.rows
-      console.log('deliverying news')
-      res.format({
-        'application/json': function () {
-          return res.send(news)
-        }
-      })
+  postgres.query(
+    'select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ = b.uid_',
+    function (err, results) {
+      if (err) {
+        console.log('error deliverying news:', err)
+        res.status(500)
+      } else {
+        var news = results.rows
+        console.log('deliverying news')
+        res.format({
+          'application/json': function () {
+            return res.send(news)
+          }
+        })
+      }
+      res.end()
     }
-    res.end()
-  })
+  )
 }
 
 function endpointGetNewsDump (req, res) {
   console.log('attempting to query news')
-  postgres.query('select * from news', function(err, result) {
+  postgres.query('select * from news', function(err, results) {
     if (err) {
       console.log('error selecting from news:', err)
       res.status(500)
@@ -238,14 +241,14 @@ function endpointPostNews (req, res) {
             news.author,
             news.image
           ],
-          function (err, result) {
+          function (err, results) {
             if (err) {
               console.log('error inserting news:', err)
               res.status(500)
             } else {
               res.format({
                 'application/json': function () {
-                  return res.send(result.rows)
+                  return res.send(results.rows)
                 }
               })
               console.log('news recorded')
