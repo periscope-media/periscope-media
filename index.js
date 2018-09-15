@@ -252,9 +252,6 @@ function endpointPostNews (req, res) {
       if (news.ntitle && news.ndescription && news.npublished && news.nfound && news.nurl && news.nauthor && news.nimage) {
         console.log('news verified')
         console.log('adding news to dump: ', news)
-        if (news.npublished.isNumber()) {
-
-        }
         postgres.query(
           'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage)'+
           'values ($1, $2, to_timestamp($3), to_timestamp($4), $5, $6, $7)',
