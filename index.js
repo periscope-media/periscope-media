@@ -237,20 +237,20 @@ function endpointPostNews (req, res) {
       var news = JSON.parse(body.toString())
       console.log('got post data: ', news)
       console.log('attempting to verify data')
-      if (news.title && news.description && news.published && news.found && news.url && news.author && news.image) {
+      if (news.ntitle && news.ndescription && news.npublished && news.nfound && news.nurl && news.nauthor && news.nimage) {
         console.log('news verified')
         console.log('adding news to dump: ', news)
         postgres.query(
           'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage)'+
           'values ($1, $2, to_timestamp($3), to_timestamp($4), $5, $6, $7)',
           [
-            news.title,
-            news.description,
-            news.published/1000,
-            news.found/1000,
-            news.url,
-            news.author,
-            news.image
+            news.ntitle,
+            news.ndescription,
+            news.npublished/1000,
+            news.nfound/1000,
+            news.nurl,
+            news.nauthor,
+            news.nimage
           ],
           function (err, results) {
             if (err) {
