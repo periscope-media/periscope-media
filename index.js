@@ -171,7 +171,7 @@ function endpointAuthenticate (req, res) {
 }
 
 function endpointGetNews (req, res) {
-  postgres.query('select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ == b.uid_', function (err, result) {
+  postgres.query('select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ = b.uid_', function (err, result) {
     if (err) {
       console.log('error deliverying news')
       res.status(500)
