@@ -185,7 +185,7 @@ function endpointAuthenticate (req, res) {
 function endpointGetNews (req, res) {
   postgres.query(
     // 'select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ = b.uid_',
-    'select * from news',
+    'select * from news order by nid desc limit 5',
     function (err, results) {
       if (err) {
         console.log('error deliverying news:', err)
