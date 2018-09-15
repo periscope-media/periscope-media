@@ -13,6 +13,5 @@ create table if not exists news (
   nurl varchar(2083) not null,
   nimage varchar(2083) not null,
   npublished timestamp not null,
-  nfound timestamp not null,
-  uid_ serial references users(uid_)
+  nfound timestamp not null
 );
