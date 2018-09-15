@@ -46,11 +46,12 @@ function getToken () {
 
 function endpointPing (req, res) {
   console.log('ponging with pong')
-  return res.format({
+  res.format({
     'application/json': function () {
       return res.send({ pong: 'pong' })
     }
   })
+  res.end()
 }
 
 function middlewareAuthenticated (req, res, next) {
@@ -61,6 +62,7 @@ function middlewareAuthenticated (req, res, next) {
   } else {
     console.log('did not find authorization headers')
     res.redirect('/api/v2/authenticate')
+    res.end()
   }
 }
 
@@ -75,6 +77,7 @@ function middlewareAuthorize (req, res, next) {
     console.log('token not valid')
     res.sendStatus(401)
     res.redrect('/api/v2/authenticate')
+    res.end()
   }
 }
 
@@ -100,25 +103,27 @@ function endpointRegister (req, res) {
             if (err) {
               console.log('error inserting into users:', err)
               res.sendStatus(500)
+              res.end()
             } else {
               res.format({
                 'application/json': function () {
                   return res.send(res.rows)
                 }
               })
+              res.end()
             }
-            res.end()
           }
         )
       } else {
         console.log('invalid post data')
         res.sendStatus(415)
+        res.end()
       }
     } catch (e) {
       console.log('bad post data')
       res.sendStatus(422)
+      res.end()
     }
-    res.end()
   })
 }
 
@@ -129,14 +134,15 @@ function endpointUsers (req, res) {
       if (err) {
         console.log('error selecting from user:', err)
         res.sendStatus(500)
+        res.end()
       } else {
         res.format({
           'application/json': function () {
             return res.send(results.rows)
           }
         })
+        res.end()
       }
-      res.end()
     }
   )
 }
@@ -162,15 +168,17 @@ function endpointAuthenticate (req, res) {
           'Authorization': token
         })
         console.log('sent token')
+        res.end()
       } else {
         console.log('invalid credentials')
         res.sendStatus(401)
+        res.end()
       }
     } catch (e) {
       console.log('bad post data')
       res.sendStatus(422)
+      res.end()
     }
-    res.end()
   })
 }
 
@@ -182,6 +190,7 @@ function endpointGetNews (req, res) {
       if (err) {
         console.log('error deliverying news:', err)
         res.sendStatus(500)
+        res.end()
       } else {
         var news = results.rows
         console.log('deliverying news')
@@ -190,8 +199,8 @@ function endpointGetNews (req, res) {
             return res.send(news)
           }
         })
+        res.end()
       }
-      res.end()
     }
   )
 }
@@ -202,6 +211,7 @@ function endpointGetNewsDump (req, res) {
     if (err) {
       console.log('error selecting from news:', err)
       res.sendStatus(500)
+      res.end()
     } else {
       console.log('deliverying news')
       var news = results.rows
@@ -210,8 +220,8 @@ function endpointGetNewsDump (req, res) {
           return res.send(news)
         }
       })
+      res.end()
     }
-    res.end()
   })
 }
 
@@ -231,8 +241,8 @@ function endpointPostNews (req, res) {
         console.log('news verified')
         console.log('adding news to dump: ', news)
         postgres.query(
-          'insert into news (ntitle, ndescription, to_timestamp(npublished), to_timestamp(nfound), nurl, nauthor, nimage)'+
-          'values ($1, $2, $3, $4, $5, $6, $7)',
+          'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage)'+
+          'values ($1, $2, to_timestamp($3), to_timestamp($4), $5, $6, $7)',
           [
             news.title,
             news.description,
@@ -246,6 +256,7 @@ function endpointPostNews (req, res) {
             if (err) {
               console.log('error inserting news:', err)
               res.sendStatus(500)
+              res.end()
             } else {
               res.format({
                 'application/json': function () {
@@ -253,18 +264,19 @@ function endpointPostNews (req, res) {
                 }
               })
               console.log('news recorded')
+              res.end()
             }
-            res.end()
         })
       } else {
         console.log('invalid news')
         res.sendStatus(415)
+        res.end()
       }
     } catch (e) {
       console.log('bad post data')
       res.sendStatus(422)
+      res.end()
     }
-    res.end()
   })
 }
 
