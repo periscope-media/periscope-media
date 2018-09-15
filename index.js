@@ -194,10 +194,22 @@ function endpointGetNews (req, res) {
 }
 
 function endpointGetNewsDump (req, res) {
-  console.log('deliverying news')
-  return res.format({
-    'application/json': function () {
-      return res.send(getNewsDump())
+  postgres.query('select * from news', function(err, result) {
+    if (err) {
+      res.sendStatus(500)
+      return res.format({
+        'application/json': function () {
+          return res.send(err)
+        }
+      })
+    } else {
+      console.log('deliverying news')
+      var news = results.rows
+      return res.format({
+        'application/json': function () {
+          return res.send(news)
+        }
+      })
     }
   })
 }
