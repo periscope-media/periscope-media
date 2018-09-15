@@ -219,22 +219,34 @@ function endpointPostNews (req, res) {
         console.log('adding news to dump: ', news)
         newsDump.push(news)
         // HERE
-        postgres.query('insert into news () value ()', [], function(err, result) {
-          if (err) {
-            res.sendStatus(500)
-            res.format({
-              'application/json': function () {
-                return res.send([err])
-              }
-            })
-          } else {
-            res.format({
-              'application/json': function () {
-                return res.send(result.rows)
-              }
-            })
-            console.log('news recorded')
-          }
+        postgres.query(
+          'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage, uid_) '+
+          'values ($1, $2. $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+          [
+            news.title,
+            news.description,
+            news.published,
+            news.found,
+            news.url,
+            news.author,
+            news.image
+          ],
+          function (err, result) {
+            if (err) {
+              res.sendStatus(500)
+              res.format({
+                'application/json': function () {
+                  return res.send([err])
+                }
+              })
+            } else {
+              res.format({
+                'application/json': function () {
+                  return res.send(result.rows)
+                }
+              })
+              console.log('news recorded')
+            }
         })
       } else {
         console.log('invalid news')
