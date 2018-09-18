@@ -1,7 +1,7 @@
 {
-  "name": "node-js-getting-started",
-  "version": "0.3.0",
-  "description": "A sample Node.js app using Express 4",
+  "name": "periscope-media",
+  "version": "0.2.0",
+  "description": "RESTful JSON API for Periscope Media",
   "engines": {
     "node": "8.9.1"
   },
