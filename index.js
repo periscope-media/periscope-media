@@ -79,7 +79,7 @@ function endpointPutTodos (req, res) {
           'update todos set ttitle = $1 where tid = $2',
           [
             todo.ttitle,
-            todo.tid
+            tid
           ],
           function (err, results) {
             if (err) {
