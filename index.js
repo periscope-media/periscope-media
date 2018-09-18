@@ -199,7 +199,7 @@ function endpointDeleteTodos (req, res) {
   postgres.query(
     'delete from todos where tid = $1',
     [
-      todo.tid
+      tid
     ],
     function (err, results) {
       if (err) {
