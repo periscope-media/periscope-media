@@ -13,103 +13,81 @@ const postgres = new pg.Client({
   connectionString: process.env.DATABASE_URL,
   ssl: true
 })
-var newsDump = [
-  {
-    "title": "Good To Go",
-    "description": "It has been a not so long up hill battle. But it is ok.",
-    "published": 1536680120350,
-    "found": 1536680120350,
-    "author": "braun braun",
-    "url": "localhost:5000/api/v2/news",
-    "image": "https://picsum.photos/100/104"
-  }
-]
 
 
 // -- functions -------------------------------------------- <
-function getNewsDump () {
-  return newsDump.filter(function (news, i) {
-    return i < 5
-  })
-}
-
-function getNews () {
-  const dump = getNewsDump()
-  dump.reverse()
-  return dump
-}
-
-function getToken () {
-  console.log('getting token')
-  return new Date().getTime()
-}
-
-function endpointPing (req, res) {
-  console.log('ponging with pong')
-  res.format({
-    'application/json': function () {
-      return res.send({ pong: 'pong' })
+function endpointGetTodos (req, res) {
+  postgres.query(
+    'select * from todos',
+    function (err, results) {
+      if (err) {
+        console.log('error selecting todos', err)
+        res.sendStatus(500)
+        res.end()
+      } else {
+        var todos = results.todos
+        res.format({
+          'application/json': function () {
+            return res.send(todos)
+          }
+        })
+        res.end()
+      }
     }
-  })
-  res.end()
+  )
 }
 
-function middlewareAuthenticated (req, res, next) {
-  console.log('checking for authorization headers')
-  if (req.headers.authorization) {
-    console.log('found authorization headers')
-    next()
-  } else {
-    console.log('did not find authorization headers')
-    res.redirect('/api/v2/authenticate')
-    res.end()
-  }
+function endpointGetSingleTodos (req, res) {
+  var tid = req.params.tid
+  postgres.query(
+    'select * from todos where tid = $1',
+    [
+      tid
+    ],
+    function (err, results) {
+      if (err) {
+        console.log('error selecting todos', err)
+        res.sendStatus(500)
+        res.end()
+      } else {
+        var todos = results.rows
+        res.format({
+          'application/json': function () {
+            return res.send(todos[0])
+          }
+        })
+        res.end()
+      }
+    }
+  )
 }
 
-function middlewareAuthorize (req, res, next) {
-  console.log('authorization')
-  var authorizationToken = req.headers.authorization
-  try {
-    console.log('verifying token')
-    var authorized = new Date(authorizationToken)
-    next()
-  } catch (e) {
-    console.log('token not valid')
-    res.sendStatus(401)
-    res.redrect('/api/v2/authenticate')
-    res.end()
-  }
-}
-
-function endpointRegister (req, res) {
+function endpointPutTodos (req, res) {
+  var tid = req.params.tid
   var body = ''
   req.on('data', function (data) {
-    console.log('/register got:', body, data)
+    console.log('/todos/:tid got:', body, data)
     body += data
   }).on('end', function () {
     console.log('finalized body:', body.toString())
     try {
-      var registrationInformation = JSON.parse(body.toString())
-      console.log('got registration info:', registrationInformation)
-      console.log('attempting to verify data')
-      if (registrationInformation.username && registrationInformation.password) {
+      var todo = JSON.parse(body.toString())
+      console.log('got todo:', todo)
+      console.log('attempting to verify todo')
+      if (todo.ttitle) {
         postgres.query(
-          'insert into users (uname, upassword, ubirthday) values ($1, $2)',
+          'update todos set ttitle = $1 where tid = $2',
           [
-            registrationInformation.username,
-            registrationInformation.password
+            todo.ttitle,
+            todo.tid
           ],
-          function (err, res) {
+          function (err, results) {
             if (err) {
               console.log('error inserting into users:', err)
               res.sendStatus(500)
               res.end()
             } else {
-              res.format({
-                'application/json': function () {
-                  return res.send(res.rows)
-                }
-              })
+              res.sendStatus(200)
               res.end()
             }
           }
@@ -127,160 +105,84 @@ function endpointRegister (req, res) {
   })
 }
 
-function endpointUsers (req, res) {
+function endpointPutTodosComplete (req, res) {
+  var tid = req.params.tid
   postgres.query(
-    'select uname, ubirthday from users',
+    'update todos set tcomplete = true where tid = $1',
+    [
+      todo.tid
+    ],
     function (err, results) {
       if (err) {
-        console.log('error selecting from user:', err)
+        console.log('error updating todos complete:', err)
         res.sendStatus(500)
         res.end()
       } else {
-        res.format({
-          'application/json': function () {
-            return res.send(results.rows)
-          }
-        })
+        res.sendStatus(200)
         res.end()
       }
     }
   )
 }
 
-function endpointAuthenticate (req, res) {
-  console.log('authenticating request owner')
-  var body = ''
-  req.on('data', function (data) {
-    console.log('got: ', body, data)
-    body += data
-  }).on('end', function () {
-    console.log('finalized body: ', body.toString())
-    try {
-      var authenticationResource = JSON.parse(body.toString())
-      console.log('got authenticationResource info: ', authenticationResource)
-      console.log('attempting to verify data')
-      if (authenticationResource.username === 'braun' && authenticationResource.password === 'braun') {
-        console.log('credentials verified')
-        var token = getToken()
-        console.log('sending token: ', token)
-        res.writeHead(200, {
-          'Access-Control-Expose-Headers': 'Authorization',
-          'Authorization': token
-        })
-        console.log('sent token')
-        res.end()
-      } else {
-        console.log('invalid credentials')
-        res.sendStatus(401)
-        res.end()
-      }
-    } catch (e) {
-      console.log('bad post data')
-      res.sendStatus(422)
-      res.end()
-    }
-  })
-}
-
-function endpointGetNews (req, res) {
+function endpointPutTodosIncomplete (req, res) {
+  var tid = req.params.tid
   postgres.query(
-    // 'select a.nid, a.ntitle, a.ndescription, a.nauthor, a.nurl, a.nimage, a.npublished, a.nfound, b.uname from news a, users b where a.uid_ = b.uid_',
-    'select * from news order by nid desc limit 5',
+    'update todos set tcomplete = false where tid = $1',
+    [
+      todo.tid
+    ],
     function (err, results) {
       if (err) {
-        console.log('error deliverying news:', err)
+        console.log('error updating todos incomplete:', err)
         res.sendStatus(500)
         res.end()
       } else {
-        var news = results.rows
-        var newss = news.map(function (n) {
-          return Object.assign(n, {
-            npublished: new Date(n.npublished).getTime(),
-            nfound: new Date(n.nfound).getTime()
-          })
-        })
-        console.log('deliverying news')
-        res.format({
-          'application/json': function () {
-            return res.send(newss)
-          }
-        })
+        res.sendStatus(200)
         res.end()
       }
     }
   )
 }
 
-function endpointGetNewsDump (req, res) {
-  console.log('attempting to query news')
-  postgres.query('select * from news order by nid desc', function(err, results) {
-    if (err) {
-      console.log('error selecting from news:', err)
-      res.sendStatus(500)
-      res.end()
-    } else {
-      console.log('deliverying news')
-      var news = results.rows
-      var newsDump = news.map(function (n) {
-        return Object.assign(n, {
-          npublished: new Date(n.npublished).getTime(),
-          nfound: new Date(n.nfound).getTime()
-        })
-      })
-      res.format({
-        'application/json': function () {
-          return res.send(newsDump)
-        }
-      })
-      res.end()
-    }
-  })
-}
-
-function endpointPostNews (req, res) {
-  console.log('preparing news for entry')
+function endpointPostTodos (req, res) {
+  console.log('preparing todos for insert')
   var body = ''
   req.on('data', function (data) {
-    console.log('got: ', body, data)
+    console.log('/todos got: ', body, data)
     body += data
   }).on('end', function () {
     console.log('finalized body: ', body)
     try {
-      var news = JSON.parse(body.toString())
-      console.log('got post data: ', news)
+      var todo = JSON.parse(body.toString())
+      console.log('got post data: ', todo)
       console.log('attempting to verify data')
-      if (news.ntitle && news.ndescription && news.npublished && news.nfound && news.nurl && news.nauthor && news.nimage) {
-        console.log('news verified')
-        console.log('adding news to dump: ', news)
+      if (todo.ttitle) {
+        console.log('todo verified')
+        console.log('adding todo: ', todo)
         postgres.query(
-          'insert into news (ntitle, ndescription, npublished, nfound, nurl, nauthor, nimage)'+
-          'values ($1, $2, to_timestamp($3), to_timestamp($4), $5, $6, $7)',
+          'insert into todos (ttitle, tcomplete) values ($1, false) returning *',
           [
-            news.ntitle,
-            news.ndescription,
-            news.npublished/1000,
-            news.nfound/1000,
-            news.nurl,
-            news.nauthor,
-            news.nimage
+            todo.ttitle
           ],
           function (err, results) {
             if (err) {
-              console.log('error inserting news:', err)
+              console.log('error inserting todos:', err)
               res.sendStatus(500)
               res.end()
             } else {
+              console.log('inserted todo')
+              var todos = results.rows
               res.format({
                 'application/json': function () {
-                  return res.send(results.rows)
+                  return res.send(todos[0])
                 }
               })
-              console.log('news recorded')
               res.end()
             }
         })
       } else {
-        console.log('invalid news')
+        console.log('invalid todo')
         res.sendStatus(415)
         res.end()
       }
@@ -292,6 +194,25 @@ function endpointPostNews (req, res) {
   })
 }
 
+function endpointDeleteTodos (req, res) {
+  var tid = req.params.tid
+  postgres.query(
+    'delete from todos where tid = $1',
+    [
+      todo.tid
+    ],
+    function (err, results) {
+      if (err) {
+        console.log('error deleting todos:', err, tid)
+        res.sendStatus(500)
+        res.end()
+      } else {
+        res.sendStatus(200)
+        res.end()
+      }
+    }
+  )
+}
 
 // -- program ---------------------------------------------- <
 
@@ -301,15 +222,11 @@ console.log('postgress data connected..')
 
 express()
   .use(cors())
-  .use(express.static(path.join(__dirname, 'public')))
-  .set('views', path.join(__dirname, 'views'))
-  .set('view engine', 'ejs')
-  .get('/', (req, res) => res.render('pages/index'))
-  .get('/api/v2/ping', endpointPing)
-  .get('/api/v2/users', endpointUsers)
-  .post('/api/v2/register', endpointRegister)
-  .post('/api/v2/authenticate', endpointAuthenticate)
-  .get('/api/v2/news', endpointGetNews)
-  .post('/api/v2/news', middlewareAuthenticated, middlewareAuthorize, endpointPostNews)
-  .get('/api/v2/news/dump', endpointGetNewsDump)
+  .get('/api/v2/todos', endpointGetTodos)
+  .get('/api/v2/todos/:tid', endpointGetSingleTodos)
+  .put('/api/v2/todos/:tid', endpointPutTodos)
+  .put('/api/v2/todos/:tid/complete', endpointPutTodosComplete)
+  .put('/api/v2/todos/:tid/incomplete', endpointPutTodosIncomplete)
+  .post('/api/v2/todos', endpointPostTodos)
+  .delete('/api/v2/todos/:tid', endpointDeleteTodos)
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
