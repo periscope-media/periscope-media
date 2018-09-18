@@ -25,7 +25,7 @@ function endpointGetTodos (req, res) {
         res.sendStatus(500)
         res.end()
       } else {
-        var todos = results.todos || []
+        var todos = results.rows
         res.format({
           'application/json': function () {
             return res.send(todos)
