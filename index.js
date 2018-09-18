@@ -25,10 +25,7 @@ function endpointGetTodos (req, res) {
         res.sendStatus(500)
         res.end()
       } else {
-        var todos = results.todos
-        if (!todos.length) {
-          todos = []
-        }
+        var todos = results.todos || []
         res.format({
           'application/json': function () {
             return res.send(todos)
